@@ -17,7 +17,10 @@ export const env = {
     .filter(Boolean),
   AI_MOCK: e.AI_MOCK === '1',
   GEMINI_API_KEY: e.GEMINI_API_KEY || '',
-  GEMINI_MODEL: e.GEMINI_MODEL || 'gemini-3.8-flash',
+  // Tolerate pasted values like `"models/gemini-x"` or trailing whitespace.
+  GEMINI_MODEL:
+    (e.GEMINI_MODEL || '').trim().replace(/^["']|["']$/g, '').replace(/^models\//, '').trim() ||
+    'gemini-3.8-flash',
   GROQ_API_KEY: e.GROQ_API_KEY || '',
   GROQ_MODEL: e.GROQ_MODEL || 'openai/gpt-oss-20b',
   OPENROUTER_API_KEY: e.OPENROUTER_API_KEY || '',
