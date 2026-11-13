@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "vercel-build": "drizzle-kit push --force && vite build",
     "start": "node .output/server/index.mjs",
     "typecheck": "tsc --noEmit",
     "db:push": "drizzle-kit push",
