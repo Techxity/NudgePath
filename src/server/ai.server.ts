@@ -26,8 +26,25 @@ async function post(url: string, headers: Record<string, string>, body: unknown)
   return res.json() as Promise<any>
 }
 
-async function gemini({ system, messages, maxTokens }: CallOpts) {
-  const model = env.GEMINI_MODEL
+// Older free models to try when the main one is overloaded (503) or rate-limited (429).
+const GEMINI_FALLBACKS = ['gemini-3.6-flash', 'gemini-3.5-flash-lite']
+
+async function gemini(opts: CallOpts) {
+  const models = [...new Set([env.GEMINI_MODEL, ...GEMINI_FALLBACKS])]
+  let lastErr: unknown
+  for (const model of models) {
+    try {
+      return await geminiModel(model, opts)
+    } catch (err) {
+      lastErr = err
+      if (!/^HTTP (503|429)\b/.test((err as Error).message)) throw err
+      console.warn(`[ai] ${model} busy, trying next Gemini model`)
+    }
+  }
+  throw lastErr
+}
+
+async function geminiModel(model: string, { system, messages, maxTokens }: CallOpts) {
   const generationConfig: Record<string, unknown> = {
     maxOutputTokens: maxTokens,
     temperature: 0.6,
